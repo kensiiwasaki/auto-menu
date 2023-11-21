@@ -10,13 +10,7 @@ import { Button, Title } from "@mantine/core";
 import { PrismaClient } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { OpenAI } from "openai";
 import { NormalPrompt } from "~/util/prompt";
 
@@ -69,7 +63,8 @@ export const action: ActionFunction = async (args) => {
 };
 
 export default function Index() {
-  const data = useLoaderData<typeof loader>();
+  // TODO:データの有無で画面を切り替えようと思った
+  // const data = useLoaderData<typeof loader>();
   const { signOut } = useClerk();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -77,8 +72,6 @@ export default function Index() {
   const title = actionData ? actionData.response.title : "";
   const ingredients = actionData ? actionData.response.ingredients : [];
   const instructions = actionData ? actionData.response.instructions : "";
-
-  console.log(data);
 
   return (
     <>
