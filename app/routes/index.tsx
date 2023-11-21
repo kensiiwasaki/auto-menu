@@ -12,6 +12,7 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { OpenAI } from "openai";
+import { NormalPrompt } from "~/util/prompt";
 
 const prisma = new PrismaClient();
 
@@ -31,17 +32,8 @@ export const action = async () => {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  const prompt = `
-  今日の夜ご飯の主菜を考えてください
-  {
-    "title": "string",
-    "ingredients": [],
-    "instructions": "string"
-  }
-  のJSON形式で返してください
-  `;
   const gptResponse = await openai.chat.completions.create({
-    messages: [{ role: "system", content: prompt }],
+    messages: [{ role: "system", content: NormalPrompt }],
     model: "gpt-3.5-turbo",
   });
   const content = gptResponse.choices[0].message.content;
