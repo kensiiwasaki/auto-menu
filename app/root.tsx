@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import "./app.css";
 
 import { cssBundleHref } from "@remix-run/css-bundle";
 import type {
