@@ -5,10 +5,27 @@ import {
   UserButton,
   useClerk,
 } from "@clerk/remix";
+import { rootAuthLoader } from "@clerk/remix/ssr.server";
 import { Button } from "@mantine/core";
+import { PrismaClient } from "@prisma/client";
+import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { OpenAI } from "openai";
+
+const prisma = new PrismaClient();
+
+export const loader: LoaderFunction = (args) => {
+  return rootAuthLoader(args, async ({ request }) => {
+    const { userId } = request.auth;
+
+    const tasks = userId
+      ? await prisma.task.findMany({ where: { userId } })
+      : [];
+
+    return json({ tasks });
+  });
+};
 
 export const action = async () => {
   const openai = new OpenAI({
@@ -24,8 +41,11 @@ export const action = async () => {
 };
 
 export default function Index() {
+  const data = useLoaderData<typeof loader>();
   const { signOut } = useClerk();
   const actionData = useActionData<typeof action>();
+
+  console.log(data);
 
   return (
     <div>
@@ -36,7 +56,7 @@ export default function Index() {
         <Button onClick={() => signOut()}>サインアウト</Button>
 
         <Form method="post">
-          <button type="submit">プロンプト</button>
+          <Button type="submit">プロンプト</Button>
         </Form>
         <p>
           {actionData
