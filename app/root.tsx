@@ -49,11 +49,6 @@ function App() {
       </head>
       <body>
         <MantineProvider>
-          {/* TODO: あとで消す */}
-          <div>
-            <h1>Remix</h1>
-          </div>
-
           <Outlet />
           <ScrollRestoration />
           <Scripts />
