@@ -31,19 +31,33 @@ export const action = async () => {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  const prompt = "こんにちは";
+  const prompt = `
+  今日の夜ご飯の主菜を考えてください
+  {
+    "title": "string",
+    "ingredients": [],
+    "instructions": "string"
+  }
+  のJSON形式で返してください
+  `;
   const gptResponse = await openai.chat.completions.create({
     messages: [{ role: "system", content: prompt }],
     model: "gpt-3.5-turbo",
   });
+  const content = gptResponse.choices[0].message.content;
+  const jsonObject = JSON.parse(content ? content : "");
 
-  return json({ response: gptResponse });
+  return json({ response: jsonObject });
 };
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
   const { signOut } = useClerk();
   const actionData = useActionData<typeof action>();
+
+  const title = actionData ? actionData.response.title : "Waiting...";
+  const ingredients = actionData ? actionData.response.ingredients : [];
+  const instructions = actionData ? actionData.response.instructions : "";
 
   console.log(data);
 
@@ -58,11 +72,13 @@ export default function Index() {
         <Form method="post">
           <Button type="submit">プロンプト</Button>
         </Form>
-        <p>
-          {actionData
-            ? actionData.response.choices[0].message.content
-            : "Waiting..."}
-        </p>
+        <p>{title}</p>
+        <ul>
+          {ingredients.map((ingredient: string) => {
+            return <li key={ingredient}>{ingredient}</li>;
+          })}
+        </ul>
+        <p>{instructions}</p>
       </SignedIn>
 
       <SignedOut>
