@@ -5,6 +5,7 @@ import {
   UserButton,
   useClerk,
 } from "@clerk/remix";
+import { Button } from "@mantine/core";
 
 export default function Index() {
   const { signOut } = useClerk();
@@ -14,7 +15,7 @@ export default function Index() {
         <h1>Index route</h1>
         <p>You are signed in!</p>
         <UserButton />
-        <button onClick={() => signOut()}>サインアウト</button>
+        <Button onClick={() => signOut()}>サインアウト</Button>
       </SignedIn>
       <SignedOut>
         <RedirectToSignIn />
