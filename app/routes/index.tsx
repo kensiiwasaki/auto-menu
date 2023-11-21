@@ -6,11 +6,17 @@ import {
   useClerk,
 } from "@clerk/remix";
 import { getAuth, rootAuthLoader } from "@clerk/remix/ssr.server";
-import { Button } from "@mantine/core";
+import { Button, Title } from "@mantine/core";
 import { PrismaClient } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import { OpenAI } from "openai";
 import { NormalPrompt } from "~/util/prompt";
 
@@ -66,42 +72,90 @@ export default function Index() {
   const data = useLoaderData<typeof loader>();
   const { signOut } = useClerk();
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
 
-  const title = actionData ? actionData.response.title : "Waiting...";
+  const title = actionData ? actionData.response.title : "";
   const ingredients = actionData ? actionData.response.ingredients : [];
   const instructions = actionData ? actionData.response.instructions : "";
 
   console.log(data);
 
   return (
-    <div>
+    <>
       <SignedIn>
-        <h1>Index route</h1>
-        <p>You are signed in!</p>
-        <UserButton />
-        <Button onClick={() => signOut()}>サインアウト</Button>
-
-        <Form method="post">
-          <Button type="submit" name="action" value="generate">
-            generate menu
+        <div className="container">
+          <div className="userButton">
+            <UserButton />
+          </div>
+          <Button
+            onClick={() => signOut()}
+            variant="light"
+            radius="xl"
+            className="logout"
+          >
+            sign out
           </Button>
+        </div>
+
+        <Form method="post" className="generateBtn">
+          {navigation.state === "submitting" ? (
+            <Button
+              type="submit"
+              name="action"
+              value="generate"
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan", deg: 245 }}
+              size="lg"
+              radius="xl"
+              disabled
+            >
+              Loading...
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              name="action"
+              value="generate"
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan", deg: 245 }}
+              size="lg"
+              radius="xl"
+            >
+              generate menu
+            </Button>
+          )}
         </Form>
-        <p>{title}</p>
-        <ul>
-          {ingredients.map((ingredient: string) => {
-            return <li key={ingredient}>{ingredient}</li>;
-          })}
-        </ul>
-        <p
-          dangerouslySetInnerHTML={{
-            __html: instructions.replace(/\n/g, "<br>"),
-          }}
-        ></p>
+
+        {actionData ? (
+          <div className="menuContainer">
+            <p className="title">~料理名~</p>
+            <Title order={3} size="h1">
+              {title}
+            </Title>
+
+            <p className="title">~材料~</p>
+            <Link to={"/List"} target="_blank">
+              LIST
+            </Link>
+            <ul>
+              {ingredients.map((ingredient: string) => {
+                return <li key={ingredient}>{ingredient}</li>;
+              })}
+            </ul>
+
+            <p className="title">~作り方~</p>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: instructions.replace(/\n/g, "<br>"),
+              }}
+            ></p>
+          </div>
+        ) : null}
       </SignedIn>
 
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
-    </div>
+    </>
   );
 }
