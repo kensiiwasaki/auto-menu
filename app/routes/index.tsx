@@ -133,10 +133,12 @@ export default function Index() {
               {title}
             </Title>
 
-            <p className="title">~材料~</p>
-            <Link to={"/List"} target="_blank">
-              LIST
-            </Link>
+            <div className="ingredientsTitle">
+              <p className="title">~材料~</p>
+              <Link to={"/List"} target="_blank">
+                LIST
+              </Link>
+            </div>
             <ul>
               {ingredients.map((ingredient: string) => {
                 return <li key={ingredient}>{ingredient}</li>;

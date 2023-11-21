@@ -31,6 +31,11 @@ body {
   font-weight: bold;
 }
 
+.ingredientsTitle {
+  display: flex;
+  justify-content: space-between;
+}
+
 .menuContainer {
   padding: 0 20px 40px 20px;
 }
