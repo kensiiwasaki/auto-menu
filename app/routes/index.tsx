@@ -5,10 +5,10 @@ import {
   UserButton,
   useClerk,
 } from "@clerk/remix";
-import { rootAuthLoader } from "@clerk/remix/ssr.server";
+import { getAuth, rootAuthLoader } from "@clerk/remix/ssr.server";
 import { Button } from "@mantine/core";
 import { PrismaClient } from "@prisma/client";
-import type { LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { OpenAI } from "openai";
@@ -28,7 +28,9 @@ export const loader: LoaderFunction = (args) => {
   });
 };
 
-export const action = async () => {
+export const action: ActionFunction = async (args) => {
+  const { userId } = await getAuth(args);
+
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -38,6 +40,24 @@ export const action = async () => {
   });
   const content = gptResponse.choices[0].message.content;
   const jsonObject = JSON.parse(content ? content : "");
+
+  await prisma.task.deleteMany({
+    where: {
+      userId: userId ? userId : "",
+    },
+  });
+
+  await Promise.all(
+    jsonObject.ingredients.map(async (ingredient: string) => {
+      return prisma.task.create({
+        data: {
+          content: ingredient,
+          completed: false,
+          userId: userId ? userId : "",
+        },
+      });
+    })
+  );
 
   return json({ response: jsonObject });
 };
@@ -62,7 +82,9 @@ export default function Index() {
         <Button onClick={() => signOut()}>サインアウト</Button>
 
         <Form method="post">
-          <Button type="submit">プロンプト</Button>
+          <Button type="submit" name="action" value="generate">
+            generate menu
+          </Button>
         </Form>
         <p>{title}</p>
         <ul>
@@ -70,7 +92,11 @@ export default function Index() {
             return <li key={ingredient}>{ingredient}</li>;
           })}
         </ul>
-        <p>{instructions}</p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: instructions.replace(/\n/g, "<br>"),
+          }}
+        ></p>
       </SignedIn>
 
       <SignedOut>
