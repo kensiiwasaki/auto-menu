@@ -13,3 +13,13 @@ export const deleteUserAllTask = async (userId: string) => {
     },
   });
 };
+
+export const createUserTask = async (ingredient: string, userId: string) => {
+  return prisma.task.create({
+    data: {
+      content: ingredient,
+      completed: false,
+      userId: userId,
+    },
+  });
+};
