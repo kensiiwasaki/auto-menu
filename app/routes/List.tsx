@@ -1,20 +1,14 @@
 import { rootAuthLoader } from "@clerk/remix/ssr.server";
 import { Title } from "@mantine/core";
-import { PrismaClient } from "@prisma/client";
+import type { Task } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { findUserAllTask } from "~/datasource/prisma/task";
-
-const prisma = new PrismaClient();
-
-type Task = {
-  id: number;
-  content: string;
-  completed: boolean;
-  createdAt: Date;
-  userId: string;
-};
+import {
+  findUniqueUserTask,
+  findUserAllTask,
+  updateUserTask,
+} from "~/datasource/prisma/task";
 
 export const loader: LoaderFunction = (args) => {
   return rootAuthLoader(args, async ({ request }) => {
@@ -28,13 +22,10 @@ export const loader: LoaderFunction = (args) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
-  const taskId = form.get("taskId");
-  const task = await prisma.task.findUnique({ where: { id: Number(taskId) } });
+  const taskId = Number(form.get("taskId"));
+  const task = await findUniqueUserTask(taskId ? taskId : -1);
   if (task) {
-    await prisma.task.update({
-      where: { id: Number(taskId) },
-      data: { completed: !task.completed },
-    });
+    await updateUserTask(taskId, task);
   }
   return json({ status: "success" });
 };
