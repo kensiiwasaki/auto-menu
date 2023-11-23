@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
+import { findAllTask } from "~/datasource/prisma/task";
 
 const prisma = new PrismaClient();
 
@@ -19,9 +20,7 @@ export const loader: LoaderFunction = (args) => {
   return rootAuthLoader(args, async ({ request }) => {
     const { userId } = request.auth;
 
-    const tasks = userId
-      ? await prisma.task.findMany({ where: { userId } })
-      : [];
+    const tasks = userId ? await findAllTask(userId) : [];
 
     return json({ tasks });
   });
