@@ -12,6 +12,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { OpenAI } from "openai";
+import { findAllTask } from "~/datasource/prisma/task";
 import { NormalPrompt } from "~/util/prompt";
 
 const prisma = new PrismaClient();
@@ -20,9 +21,7 @@ export const loader: LoaderFunction = (args) => {
   return rootAuthLoader(args, async ({ request }) => {
     const { userId } = request.auth;
 
-    const tasks = userId
-      ? await prisma.task.findMany({ where: { userId } })
-      : [];
+    const tasks = userId ? await findAllTask(userId) : [];
 
     return json({ tasks });
   });
