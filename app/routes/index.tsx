@@ -7,15 +7,16 @@ import {
 } from "@clerk/remix";
 import { getAuth, rootAuthLoader } from "@clerk/remix/ssr.server";
 import { Button, Title } from "@mantine/core";
-import { PrismaClient } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { OpenAI } from "openai";
-import { deleteUserAllTask, findUserAllTask } from "~/datasource/prisma/task";
+import {
+  createUserTask,
+  deleteUserAllTask,
+  findUserAllTask,
+} from "~/datasource/prisma/task";
 import { NormalPrompt } from "~/util/prompt";
-
-const prisma = new PrismaClient();
 
 export const loader: LoaderFunction = (args) => {
   return rootAuthLoader(args, async ({ request }) => {
@@ -43,14 +44,8 @@ export const action: ActionFunction = async (args) => {
   await deleteUserAllTask(userId ? userId : "");
 
   await Promise.all(
-    jsonObject.ingredients.map(async (ingredient: string) => {
-      return prisma.task.create({
-        data: {
-          content: ingredient,
-          completed: false,
-          userId: userId ? userId : "",
-        },
-      });
+    jsonObject.ingredients.map((ingredient: string) => {
+      return createUserTask(ingredient, userId ? userId : "");
     })
   );
 
