@@ -12,7 +12,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { OpenAI } from "openai";
-import { findAllTask } from "~/datasource/prisma/task";
+import { deleteUserAllTask, findUserAllTask } from "~/datasource/prisma/task";
 import { NormalPrompt } from "~/util/prompt";
 
 const prisma = new PrismaClient();
@@ -21,7 +21,7 @@ export const loader: LoaderFunction = (args) => {
   return rootAuthLoader(args, async ({ request }) => {
     const { userId } = request.auth;
 
-    const tasks = userId ? await findAllTask(userId) : [];
+    const tasks = userId ? await findUserAllTask(userId) : [];
 
     return json({ tasks });
   });
@@ -40,11 +40,7 @@ export const action: ActionFunction = async (args) => {
   const content = gptResponse.choices[0].message.content;
   const jsonObject = JSON.parse(content ? content : "");
 
-  await prisma.task.deleteMany({
-    where: {
-      userId: userId ? userId : "",
-    },
-  });
+  await deleteUserAllTask(userId ? userId : "");
 
   await Promise.all(
     jsonObject.ingredients.map(async (ingredient: string) => {
