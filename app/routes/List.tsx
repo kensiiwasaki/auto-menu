@@ -3,7 +3,7 @@ import { Title } from "@mantine/core";
 import type { Task } from "@prisma/client";
 import { json } from "@remix-run/node";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { Form, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   findUniqueUserTask,
   findUserAllTask,
@@ -32,16 +32,16 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function List() {
   const { tasks } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
+  // const fetcher = useFetcher();
 
-  const toggleTaskCompletion = async (taskId: number) => {
-    const formData = new FormData();
-    formData.append("taskId", String(taskId));
+  // const toggleTaskCompletion = async (taskId: number) => {
+  //   const formData = new FormData();
+  //   formData.append("taskId", String(taskId));
 
-    await fetcher.submit(formData, {
-      method: "POST",
-    });
-  };
+  //   await fetcher.submit(formData, {
+  //     method: "POST",
+  //   });
+  // };
 
   return (
     <div className="listContainer">
@@ -49,14 +49,14 @@ export default function List() {
         LIST
       </Title>
       {tasks.map((task: Task) => (
-        <div key={task.id}>
+        <Form key={task.id} method="POST">
           <p
             className={task.completed ? "completed" : ""}
-            onClick={() => toggleTaskCompletion(task.id)}
+            // onClick={() => toggleTaskCompletion(task.id)}
           >
             {task.content}
           </p>
-        </div>
+        </Form>
       ))}
     </div>
   );
